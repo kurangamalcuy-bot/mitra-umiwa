@@ -50,73 +50,76 @@ export default function ResellerDashboard() {
   }, []);
 
   // ==========================================
-  // LOGIKA TARIK DATA AMAN (TANPA COGS)
+  // LOGIKA TARIK DATA AMAN (DISAMAKAN 100% DENGAN ADMIN)
   // ==========================================
   async function fetchLiveStock() {
     try {
-      const { data: batchesData, error: batchesError } = await supabase
-        .from('batches')
-        .select('id, product_name, total_qty, status');
+      // 1. Tarik semua data Batch & Transaksi (Persis seperti Admin)
+      const [batchesRes, trxRes] = await Promise.all([
+        supabase.from('batches').select('product_name, total_qty, status, is_archived'),
+        supabase.from('transactions').select('product_name, qty')
+      ]);
 
-      if (batchesError) throw batchesError;
+      if (batchesRes.error) throw batchesRes.error;
+      if (trxRes.error) throw trxRes.error;
 
-      if (!batchesData || batchesData.length === 0) {
-        setProducts([]);
-        setLoading(false);
-        return;
-      }
+      const batchesData = batchesRes.data || [];
+      const trxData = trxRes.data || [];
 
-      // --- FILTER KHUSUS SUPER KETAT ---
-      const activeBatches = batchesData.filter(batch => {
-        const name = (batch.product_name || '').toLowerCase().trim();
-        const status = (batch.status || '').toLowerCase();
+      // 2. Gunakan Logika "stockMap" yang persis sama dengan Admin Dashboard
+      const stockMap: Record<string, { in: number, out: number, displayName: string, isArchived: boolean }> = {};
 
-        if (name.includes('baso')) return false;
-        if (name === 'pempek') return false;
-        if (!status.includes('freezer')) return false;
+      batchesData.forEach(b => {
+        const rawName = b.product_name || 'Pempek Campur';
+        const key = rawName.trim().toLowerCase();
 
-        return true; 
+        // Filter produk khusus yang tidak perlu tampil
+        if (key.includes('baso') || key === 'pempek') return;
+
+        if (!stockMap[key]) {
+          stockMap[key] = { in: 0, out: 0, displayName: rawName.trim(), isArchived: true };
+        }
+
+        // Hitung total masuk (abaikan yang Sold Out)
+        const status = (b.status || '').toLowerCase();
+        if (status !== 'sold out') {
+          stockMap[key].in += Number(b.total_qty || 0);
+        }
+
+        // Cek status arsip
+        if (b.is_archived === false && !status.includes('archive')) {
+          stockMap[key].isArchived = false;
+        }
       });
 
-      if (activeBatches.length === 0) {
-        setProducts([]);
-        setLoading(false);
-        return;
-      }
+      // 3. Kurangi dengan Total Keluar (berdasarkan NAMA, bukan batch_id)
+      trxData.forEach(t => {
+        const rawName = t.product_name || 'Pempek Campur';
+        const key = rawName.trim().toLowerCase();
 
-      const batchIds = activeBatches.map(b => b.id);
-      const { data: trxData, error: trxError } = await supabase
-        .from('transactions')
-        .select('batch_id, qty')
-        .in('batch_id', batchIds);
+        // Hanya kurangi jika produknya ada di stockMap
+        if (stockMap[key]) {
+          stockMap[key].out += Number(t.qty || 0);
+        }
+      });
 
-      if (trxError) throw trxError;
+      // 4. Tahap Akhir: Susun data khusus layar Reseller
+      const finalProducts = Object.values(stockMap)
+        .filter(item => item.isArchived === false) // Sembunyikan yang di-arsip
+        .map(item => {
+          const name = item.displayName;
+          const stock = item.in - item.out;
 
-      const productMap: Record<string, ProductInfo> = {};
-
-      activeBatches.forEach(batch => {
-        const soldQty = (trxData || [])
-          .filter(t => t.batch_id === batch.id)
-          .reduce((sum, t) => sum + (Number(t.qty) || 0), 0);
-
-        const remainingStock = Number(batch.total_qty) - soldQty;
-
-        if (remainingStock > 0) {
-          const name = batch.product_name;
-          
-          // Menggunakan Smart Detector untuk Harga
+          // Tarik harga otomatis pakai Smart Detector
           const config = getPriceConfig(name);
           const price = config.hargaReseller;
           const het = config.hargaJual;
 
-          if (!productMap[name]) {
-            productMap[name] = { name, stock: 0, price, het };
-          }
-          productMap[name].stock += remainingStock;
-        }
-      });
+          return { name, stock, price, het };
+        })
+        .filter(p => p.stock > 0) // Sembunyikan dari aplikasi Mitra kalau stoknya 0 (Habis)
+        .sort((a, b) => a.name.localeCompare(b.name));
 
-      const finalProducts = Object.values(productMap).sort((a, b) => a.name.localeCompare(b.name));
       setProducts(finalProducts);
 
     } catch (error) {
