@@ -117,7 +117,6 @@ export default function ResellerDashboard() {
 
           return { name, stock, price, het };
         })
-        .filter(p => p.stock > 0) // Sembunyikan dari aplikasi Mitra kalau stoknya 0 (Habis)
         .sort((a, b) => a.name.localeCompare(b.name));
 
       setProducts(finalProducts);
@@ -224,18 +223,22 @@ export default function ResellerDashboard() {
             {products.length === 0 ? (
               <p className="text-center text-sm text-slate-400 py-4 italic">Freezer sedang kosong. Menunggu restock...</p>
             ) : (
-              products.map((p) => (
-                <div key={`stock-${p.name}`} className="flex justify-between items-center">
-                  <span className="text-slate-600 text-sm font-medium">{p.name}</span>
-                  <span className={`font-black text-xs px-2.5 py-1 rounded-lg ${
-                    p.stock > 10 ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 
-                    p.stock > 0 ? 'bg-orange-50 text-orange-700 border border-orange-100' : 
-                    'bg-rose-50 text-rose-700 border border-rose-100'
-                  }`}>
-                    {p.stock} Pack
-                  </span>
-                </div>
-              ))
+              products.map((p) => {
+                const isHabis = p.stock <= 0;
+                
+                return (
+                  <div key={`stock-${p.name}`} className={`flex justify-between items-center p-2 rounded-xl transition-all ${isHabis ? 'bg-slate-50 opacity-60' : ''}`}>
+                    <span className={`text-sm font-medium ${isHabis ? 'text-slate-400 line-through' : 'text-slate-600'}`}>{p.name}</span>
+                    <span className={`font-black text-xs px-2.5 py-1 rounded-lg ${
+                      isHabis ? 'bg-rose-100 text-rose-600 border border-rose-200' :
+                      p.stock > 10 ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 
+                      'bg-orange-50 text-orange-700 border border-orange-100'
+                    }`}>
+                      {isHabis ? 'HABIS' : `${p.stock} Pack`}
+                    </span>
+                  </div>
+                );
+              })
             )}
           </div>
         </section>
@@ -253,19 +256,20 @@ export default function ResellerDashboard() {
             )}
 
             {products.map((p) => {
+              const isHabis = p.stock <= 0;
               const qty = cart[p.name] || 0;
               const isMax = qty >= p.stock;
               
               return (
-                <div key={`calc-${p.name}`} className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100 transition-colors hover:border-emerald-200">
+                <div key={`calc-${p.name}`} className={`flex justify-between items-center p-3 rounded-xl border transition-colors ${isHabis ? 'bg-slate-100 border-slate-200 opacity-60 grayscale' : 'bg-slate-50 border-slate-100 hover:border-emerald-200'}`}>
                   <div className="w-3/5 pr-2">
-                    <p className="text-[11px] font-bold text-slate-700 leading-tight">{p.name}</p>
+                    <p className={`text-[11px] font-bold leading-tight ${isHabis ? 'text-slate-400 line-through' : 'text-slate-700'}`}>{p.name}</p>
                     <div className="mt-1.5 flex flex-col items-start gap-1">
-                      <p className="text-xs font-black text-emerald-600">
+                      <p className={`text-xs font-black ${isHabis ? 'text-slate-400' : 'text-emerald-600'}`}>
                          {formatIDR(p.price)} 
                          <span className="text-[9px] font-normal text-slate-400 line-through ml-1">{formatIDR(p.het)}</span>
                       </p>
-                      <div className="inline-flex items-center text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                      <div className={`inline-flex items-center text-[9px] font-bold px-1.5 py-0.5 rounded border ${isHabis ? 'bg-slate-200 text-slate-400 border-slate-300' : 'text-amber-600 bg-amber-50 border-amber-200'}`}>
                          <TrendingUp className="w-3 h-3 mr-1" />
                          Untung {formatIDR(p.het - p.price)}/pack
                       </div>
@@ -275,15 +279,16 @@ export default function ResellerDashboard() {
                   <div className="flex items-center gap-2 bg-white p-1 rounded-lg shadow-sm border border-slate-200 shrink-0">
                     <button 
                       onClick={() => updateCart(p.name, -1, p.stock)}
-                      className="w-7 h-7 flex items-center justify-center text-slate-500 bg-slate-50 rounded-md active:bg-slate-200 hover:bg-slate-100 transition-colors"
+                      disabled={isHabis || qty === 0}
+                      className={`w-7 h-7 flex items-center justify-center rounded-md transition-colors ${isHabis || qty === 0 ? 'bg-slate-50 text-slate-300 cursor-not-allowed' : 'text-slate-500 bg-slate-50 active:bg-slate-200 hover:bg-slate-100'}`}
                     >
                       <Minus size={14} />
                     </button>
-                    <span className="w-5 text-center text-sm font-black text-slate-800">{qty}</span>
+                    <span className={`w-5 text-center text-sm font-black ${isHabis ? 'text-slate-300' : 'text-slate-800'}`}>{qty}</span>
                     <button 
                       onClick={() => updateCart(p.name, 1, p.stock)}
-                      disabled={isMax}
-                      className={`w-7 h-7 flex items-center justify-center rounded-md transition-colors ${isMax ? 'bg-slate-100 text-slate-300' : 'text-white bg-emerald-500 active:bg-emerald-600 hover:bg-emerald-400'}`}
+                      disabled={isMax || isHabis}
+                      className={`w-7 h-7 flex items-center justify-center rounded-md transition-colors ${isMax || isHabis ? 'bg-slate-100 text-slate-300 cursor-not-allowed' : 'text-white bg-emerald-500 active:bg-emerald-600 hover:bg-emerald-400'}`}
                     >
                       <Plus size={14} />
                     </button>
