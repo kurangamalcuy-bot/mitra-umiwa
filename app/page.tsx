@@ -70,7 +70,8 @@ export default function ResellerDashboard() {
       const stockMap: Record<string, { in: number, out: number, displayName: string, isArchived: boolean }> = {};
 
       batchesData.forEach(b => {
-        const rawName = b.product_name || 'Pempek Campur';
+        // PERBAIKAN: Potong teks jika ada embel-embel " | "
+        const rawName = (b.product_name || 'Pempek Campur').split(' | ')[0];
         const key = rawName.trim().toLowerCase();
 
         // Filter produk khusus yang tidak perlu tampil
@@ -94,7 +95,8 @@ export default function ResellerDashboard() {
 
       // 3. Kurangi dengan Total Keluar (berdasarkan NAMA, bukan batch_id)
       trxData.forEach(t => {
-        const rawName = t.product_name || 'Pempek Campur';
+        // PERBAIKAN: Potong teks jika ada embel-embel paket " | "
+        const rawName = (t.product_name || 'Pempek Campur').split(' | ')[0];
         const key = rawName.trim().toLowerCase();
 
         // Hanya kurangi jika produknya ada di stockMap
