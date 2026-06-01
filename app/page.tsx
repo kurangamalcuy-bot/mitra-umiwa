@@ -27,6 +27,7 @@ const getPriceConfig = (dbName: string) => {
   if (name.includes('selam')) return { hargaReseller: 24000, hargaJual: 28000 };
   if (name.includes('tekwan')) return { hargaReseller: 31000, hargaJual: 35000 };
   if (name.includes('adaan') || name.includes('kulit')) return { hargaReseller: 17000, hargaJual: 20000 };
+  if (name.includes('cuko')) return { hargaReseller: 10000, hargaJual: 12000 };
   
   return { hargaReseller: 20000, hargaJual: 25000 }; // Harga Jaga-jaga
 };
