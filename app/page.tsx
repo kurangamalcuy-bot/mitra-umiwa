@@ -207,7 +207,7 @@ export default function ResellerDashboard() {
         <div className="absolute top-0 right-0 p-4 opacity-10">
           <ShoppingBag className="w-24 h-24" />
         </div>
-        <h1 className="text-2xl font-black relative z-10">Kalkulator Mitra</h1>
+        <h1 className="text-2xl font-black relative z-10">Kalkulator Reseller</h1>
         <p className="text-emerald-100 text-xs mt-1 relative z-10 flex items-center">
           <CheckCircle2 className="w-3 h-3 mr-1" /> Pempek Umiwa Official
         </p>
