@@ -21,9 +21,9 @@ const getPriceConfig = (dbName: string) => {
   
   // Logika pengecekan kata kunci otomatis
   if (name.includes('besar') && name.includes('10')) return { hargaReseller: 31000, hargaJual: 35000 };
-  if (name.includes('15')) return { hargaReseller: 26000, hargaJual: 30000 };
-  if (name.includes('20')) return { hargaReseller: 31000, hargaJual: 35000 };
-  if (name.includes('10')) return { hargaReseller: 17000, hargaJual: 20000 }; // Dieksekusi setelah 'besar 10'
+  if (name.includes('isi 15')) return { hargaReseller: 26000, hargaJual: 30000 };
+  if (name.includes('isi 20')) return { hargaReseller: 31000, hargaJual: 35000 };
+  if (name.includes('isi 10')) return { hargaReseller: 17000, hargaJual: 20000 }; // Dieksekusi setelah 'besar 10'
   if (name.includes('selam')) return { hargaReseller: 24000, hargaJual: 28000 };
   if (name.includes('tekwan')) return { hargaReseller: 31000, hargaJual: 35000 };
   if (name.includes('adaan') || name.includes('kulit')) return { hargaReseller: 17000, hargaJual: 20000 };
