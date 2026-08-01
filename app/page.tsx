@@ -20,13 +20,13 @@ const getPriceConfig = (dbName: string) => {
   const name = dbName.toLowerCase();
   
   // Logika pengecekan kata kunci otomatis
-  if (name.includes('besar') && name.includes('10')) return { hargaReseller: 31000, hargaJual: 35000 };
-  if (name.includes('isi 15')) return { hargaReseller: 26000, hargaJual: 30000 };
-  if (name.includes('isi 20')) return { hargaReseller: 31000, hargaJual: 35000 };
-  if (name.includes('isi 10')) return { hargaReseller: 17000, hargaJual: 20000 }; // Dieksekusi setelah 'besar 10'
-  if (name.includes('selam')) return { hargaReseller: 24000, hargaJual: 28000 };
-  if (name.includes('tekwan')) return { hargaReseller: 31000, hargaJual: 35000 };
-  if (name.includes('adaan') || name.includes('kulit')) return { hargaReseller: 17000, hargaJual: 20000 };
+  if (name.includes('besar') && name.includes('10')) return { hargaReseller: 36000, hargaJual: 40000 };
+  if (name.includes('isi 15')) return { hargaReseller: 29000, hargaJual: 33000 };
+  if (name.includes('isi 20')) return { hargaReseller: 36000, hargaJual: 40000 };
+  if (name.includes('isi 10')) return { hargaReseller: 20000, hargaJual: 23000 }; // Dieksekusi setelah 'besar 10'
+  if (name.includes('selam')) return { hargaReseller: 28000, hargaJual: 31000 };
+  if (name.includes('tekwan')) return { hargaReseller: 32000, hargaJual: 36000 };
+  if (name.includes('adaan') || name.includes('kulit')) return { hargaReseller: 20000, hargaJual: 23000 };
   if (name.includes('cuko')) return { hargaReseller: 10000, hargaJual: 12000 };
   
   return { hargaReseller: 20000, hargaJual: 25000 }; // Harga Jaga-jaga
